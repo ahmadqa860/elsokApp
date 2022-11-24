@@ -1,0 +1,6 @@
+{
+  "localApi":"http://127.0.0.1:8000",
+  "apiUrl": "https://elsok.net:8000/api",
+  "storageUrl": "https://elsok.net:8000/storage/images",
+  "header": { "Content-Type": "application/json", "Accept": "application/json" }
+}
