@@ -43,7 +43,7 @@ const OnBoardScreen = ({navigation}) => {
           <View style={style.indicator} />
         </View>
         <PrimaryButton
-          onPress={() => navigation.navigate('AddProductScreen')}
+          onPress={() => navigation.navigate('Home')}
           title="ابدأ الان"
         />
       </View>

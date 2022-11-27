@@ -10,19 +10,18 @@ import {
   Alert,
   DevSettings,
   Image,
+  TouchableOpacity,
 } from 'react-native';
 import {
-  FlatList,
   ScrollView,
   TextInput,
-  TouchableOpacity,
 } from 'react-native-gesture-handler';
 import SelectDropdown from 'react-native-select-dropdown';
 import * as Animatable from 'react-native-animatable';
 import {useTheme} from 'react-native-paper';
-import {addProduct} from '../../services/userService';
+import {addProduct,prepareImageFiles} from '../../services/userService';
 import {apiUrl} from '../../config.json';
-import ImagePicker from 'react-native-image-crop-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
 import COLORS from '../../consts/colors';
 
 const {width} = Dimensions.get('screen');
@@ -31,17 +30,12 @@ const cardWidth = width / 2 - 40;
 const AddProductScreen = ({navigation}) => {
   const {colors} = useTheme();
   const [categoriesData, setCategoriesData] = useState([]);
-  const [imagesArray, setImagesArray] = useState([
-    {src: '../../views/test.jpg'},
-    {src: '../../views/test.jpg'},
-    {src: '../../views/test.jpg'},
-    {src: '../../views/test.jpg'},
-  ]);
+  const [imagesArray, setImagesArray] = useState([]);
   const [data, setData] = React.useState({
     categorie_id: '',
     product_title: '',
     product_description: '',
-    product_price: '',
+    product_price: 0,
     imagesArray: [],
     check_textInputChange: false,
     isValidPrice: true,
@@ -126,8 +120,9 @@ const AddProductScreen = ({navigation}) => {
     }
   };
 
+
+
   const handleProductSubmit = async () => {
-    console.log(data);
     
     if (
       data.product_title.length == 0 ||
@@ -144,9 +139,8 @@ const AddProductScreen = ({navigation}) => {
       data.isValidPrice &&
       data.isValidTitle
       ) {
-        console.log('work');
         const response = await addProduct(data);
-        console.log(response);
+        //console.log(response);
         /*
       if (response) {
         DevSettings.reload();
@@ -160,6 +154,42 @@ const AddProductScreen = ({navigation}) => {
       console.log('not work');
     }
   };
+
+  const choosePhotoFromLibrary = async () => {
+    
+    const options={
+      selectionLimit: 0,
+      maxWidth: 500,
+      maxHeight: 300,
+      quality: 0.6,
+      mediaType:'photo',
+    }
+    try {
+      const imagesResult = await launchImageLibrary(options);
+      console.log(imagesResult);
+      prepareImageFiles(imagesResult.assets)
+      if(imagesResult.assets.length >= 8){
+        Alert.alert('إدخال خاطئ!', 'عليك ادخال 8 صور على الأكثر!', [{text: 'أكمل'}]);
+      }
+      setImagesArray(imagesResult.assets);
+          setData({
+            ...data,
+            imagesArray: imagesResult.assets,
+            isValidImages: true,
+          })
+   
+    }catch(err){
+      console.log(err);
+      setData({
+        ...data,
+        isValidImages: false,
+      });
+    }
+  };
+
+
+
+  /*
 
   const choosePhotoFromLibrary = async () => {
     try {
@@ -190,7 +220,7 @@ const AddProductScreen = ({navigation}) => {
     }
   };
 
-
+*/
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: COLORS.white}}>
       <ScrollView>
@@ -295,12 +325,11 @@ const AddProductScreen = ({navigation}) => {
             <View style={styles.cardWrap}>
               
               {imagesArray.map((image, index) => {
-                const img = '../../views/test.jpg';
                 return (
                   <View key={index} style={styles.card}>
                     <View style={{alignItems: 'center', top: 23}}>
                       <Image 
-                        source={require(img)}
+                        source={{uri:image.uri}}
                         style={styles.imageCard}
                       />
                     </View>

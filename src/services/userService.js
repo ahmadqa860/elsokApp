@@ -161,52 +161,73 @@ export async function registerProfile(
   }
 }
 
-export async function addProduct(
-  {imagesArray, categorie_id, product_title, address, product_description},
-  product_price,
-) {
-  var bodyFormData = new FormData();
 
+export async function prepareImageFiles (imagesArray){
+  const imageFilesArray=[];
+  var i =0;
+for(let i=0;i<imagesArray.length;i++){
+  //console.log(imagesArray[i]);
+  //console.log(imagesArray[i].fileName);
+  //imageFilesArray[i]= new File(imagesArray,imagesArray[i].fileName,{type:imagesArray[i].type,size:imagesArray[i].fileSize});
+  imageFilesArray[i]= new File(imagesArray,imagesArray[i].fileName, { lastModified: new Date().getTime(), type: imagesArray[i].type });
+}
+console.log(imageFilesArray);
+  //return imagesArray;
+}
+
+
+
+export async function addProduct(
+  {imagesArray, categorie_id, product_title, product_description,product_price}
+) {  
+  const imagesFilesArray = prepareImageFiles(imagesArray);
+  console.log(imagesFilesArray);
+  /*
+  var bodyFormData = new FormData();
+  let i=0;
   for (let uploadImage of imagesArray) {
-    bodyFormData.append('uploadImages[]', uploadImage);
+    bodyFormData.append('uploadImages', uploadImage);
   }
 
   bodyFormData.append('categorie_id', categorie_id);
   bodyFormData.append('product_title', product_title);
   bodyFormData.append('product_description', product_description);
   bodyFormData.append('product_price', product_price);
-
+  console.log(bodyFormData);
+  
   const tokenData = await AsyncStorage.getItem(tokenKey)
-    .then(response => response)
-    .then(json => json)
-    .catch(err => err);
-
+  .then(response => response)
+  .then(json => json)
+  .catch(err => err);
+  
   if (hasToken() && tokenData !== null) {
+    console.log(bodyFormData);
     const response = await fetch(`${apiUrl}/seller-products`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${tokenData}`,
         Accept: 'application/json',
       },
-      body: JSON.stringify(bodyFormData),
+      body: bodyFormData,
     })
       .then(res => res.json())
       .then(data => {
         if (data.errors) {
           console.log(data.errors);
-          return false;
+          return data.errors;
         } else {
           try {
             return true;
           } catch (error) {
-            return false;
+            return error;
           }
         }
       })
-      .catch(e => false);
+      .catch(e => e);
     return response;
   }
+  */
 }
 
 export async function hasToken() {
@@ -214,6 +235,7 @@ export async function hasToken() {
     .then(res => true)
     .catch(res => false);
   return token;
+  
 }
 
 export async function deleteItem(id) {
@@ -250,4 +272,5 @@ export default {
   deleteItem,
   registerProfile,
   addProduct,
+  prepareImageFiles,
 };
